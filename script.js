@@ -1,17 +1,18 @@
 const taskInput = document.getElementById("taskInput");
 const taskDate = document.getElementById("taskDate");
 const taskCategory = document.getElementById("taskCategory");
+const taskPriority = document.getElementById("taskPriority");
 const addTaskBtn = document.getElementById("addTaskBtn");
 const taskList = document.getElementById("taskList");
 const filterButtons = document.querySelectorAll(".filter-btn");
 
 let tasks = [];
 
-
 addTaskBtn.addEventListener("click", () => {
   const taskText = taskInput.value.trim();
   const date = taskDate.value;
   const category = taskCategory.value;
+  const priority = taskPriority.value;
 
   if (taskText === "") {
     alert("Please enter a task!");
@@ -23,6 +24,7 @@ addTaskBtn.addEventListener("click", () => {
     name: taskText,
     date: date || "No Date",
     category: category || "General",
+    priority: priority || "medium", // Default priority to medium if not specified
     completed: false,
   };
 
@@ -30,34 +32,57 @@ addTaskBtn.addEventListener("click", () => {
   displayTasks(tasks);
   taskInput.value = "";
   taskDate.value = "";
-  taskCategory.value = "";
+  taskCategory.value = "General";  // Reset category dropdown
+  taskPriority.value = "medium";  // Reset priority dropdown
 });
 
+// Function to display tasks
 function displayTasks(taskListArray) {
   taskList.innerHTML = "";
+
+  // Sort tasks by priority before displaying them
+  taskListArray.sort((a, b) => {
+    const priorityOrder = { high: 1, medium: 2, low: 3 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
 
   taskListArray.forEach((task) => {
     const taskElement = document.createElement("li");
     taskElement.classList.add("task-item");
     if (task.completed) taskElement.classList.add("completed");
 
+    let priorityColor;
+    switch (task.priority) {
+      case "high":
+        priorityColor = "red";
+        break;
+      case "medium":
+        priorityColor = "yellow";
+        break;
+      case "low":
+        priorityColor = "green";
+        break;
+      default:
+        priorityColor = "grey";
+    }
+
     taskElement.innerHTML = `
-      <span>${task.name} (${task.category}) - ${task.date}</span>
+      <span style="color: ${priorityColor};">${task.name} (${task.category}) - ${task.date} - Priority: ${task.priority}</span>
       <div>
-        <input type="checkbox" class="complete-checkbox" ${
-          task.completed ? "checked" : ""
-        } onchange="toggleTaskCompletion(${task.id})" />
-        <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
+        <input type="checkbox" class="complete-checkbox" data-task-id="${task.id}" ${
+      task.completed ? "checked" : ""
+    } />
+        <button class="delete-btn" data-task-id="${task.id}">Delete</button>
       </div>
     `;
 
     taskList.appendChild(taskElement);
   });
 
-  updateTaskEvents(); 
+  updateTaskEvents();
 }
 
-
+// Function to toggle task completion
 function toggleTaskCompletion(taskId) {
   tasks = tasks.map((task) => {
     if (task.id === taskId) {
@@ -68,39 +93,35 @@ function toggleTaskCompletion(taskId) {
   displayTasks(tasks);
 }
 
-
+// Function to delete task
 function deleteTask(taskId) {
   tasks = tasks.filter((task) => task.id !== taskId);
   displayTasks(tasks);
 }
 
-
+// Function to update events for checkboxes and delete buttons
 function updateTaskEvents() {
   document.querySelectorAll(".complete-checkbox").forEach((checkbox) => {
     checkbox.addEventListener("change", (e) => {
-      const taskId = parseInt(
-        e.target.closest(".task-item").querySelector("input").dataset.taskId
-      );
-      toggleTaskCompletion(taskId);
+      const taskId = e.target.getAttribute("data-task-id");
+      toggleTaskCompletion(Number(taskId));
     });
   });
 
   document.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      const taskId = parseInt(
-        e.target.closest(".task-item").querySelector("input").dataset.taskId
-      );
-      deleteTask(taskId);
+      const taskId = e.target.getAttribute("data-task-id");
+      deleteTask(Number(taskId));
     });
   });
 }
 
-
+// Handle filter button clicks
 filterButtons.forEach((button) => {
   button.addEventListener("click", (e) => {
     const filter = e.target.dataset.filter;
-
     let filteredTasks;
+
     switch (filter) {
       case "all":
         filteredTasks = tasks;
@@ -118,12 +139,8 @@ filterButtons.forEach((button) => {
   });
 });
 
-
+// Handle category filtering
 function filterTasks(category) {
-  if (category === "All") {
-    displayTasks(tasks);
-  } else {
-    const filteredTasks = tasks.filter((task) => task.category === category);
-    displayTasks(filteredTasks);
-  }
+  const filteredTasks = category === "All" ? tasks : tasks.filter((task) => task.category === category);
+  displayTasks(filteredTasks);
 }
