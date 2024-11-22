@@ -24,7 +24,7 @@ addTaskBtn.addEventListener("click", () => {
     name: taskText,
     date: date || "No Date",
     category: category || "General",
-    priority: priority || "medium", // Default priority to medium if not specified
+    priority: priority || "medium", 
     completed: false,
   };
 
@@ -32,15 +32,14 @@ addTaskBtn.addEventListener("click", () => {
   displayTasks(tasks);
   taskInput.value = "";
   taskDate.value = "";
-  taskCategory.value = "General";  // Reset category dropdown
-  taskPriority.value = "medium";  // Reset priority dropdown
+  taskCategory.value = "General";  
+  taskPriority.value = "medium";  
 });
 
-// Function to display tasks
 function displayTasks(taskListArray) {
   taskList.innerHTML = "";
 
-  // Sort tasks by priority before displaying them
+ 
   taskListArray.sort((a, b) => {
     const priorityOrder = { high: 1, medium: 2, low: 3 };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
@@ -82,7 +81,7 @@ function displayTasks(taskListArray) {
   updateTaskEvents();
 }
 
-// Function to toggle task completion
+
 function toggleTaskCompletion(taskId) {
   tasks = tasks.map((task) => {
     if (task.id === taskId) {
@@ -93,13 +92,13 @@ function toggleTaskCompletion(taskId) {
   displayTasks(tasks);
 }
 
-// Function to delete task
+
 function deleteTask(taskId) {
   tasks = tasks.filter((task) => task.id !== taskId);
   displayTasks(tasks);
 }
 
-// Function to update events for checkboxes and delete buttons
+
 function updateTaskEvents() {
   document.querySelectorAll(".complete-checkbox").forEach((checkbox) => {
     checkbox.addEventListener("change", (e) => {
@@ -116,7 +115,7 @@ function updateTaskEvents() {
   });
 }
 
-// Handle filter button clicks
+
 filterButtons.forEach((button) => {
   button.addEventListener("click", (e) => {
     const filter = e.target.dataset.filter;
@@ -139,8 +138,27 @@ filterButtons.forEach((button) => {
   });
 });
 
-// Handle category filtering
+
 function filterTasks(category) {
   const filteredTasks = category === "All" ? tasks : tasks.filter((task) => task.category === category);
   displayTasks(filteredTasks);
 }
+
+function filterTasks() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const tasks = document.querySelectorAll('.task-item');
+    
+    tasks.forEach(task => {
+        const taskName = task.querySelector('.task-name').textContent.toLowerCase();
+        const taskCategory = task.querySelector('.task-category').textContent.toLowerCase();
+        const taskPriority = task.querySelector('.task-priority').textContent.toLowerCase();
+
+        if (taskName.includes(searchInput) || taskCategory.includes(searchInput) || taskPriority.includes(searchInput)) {
+            task.style.display = 'flex'; 
+            task.style.display = 'none';
+        }
+    });
+}
+
+
+document.getElementById('searchInput').addEventListener('input', filterTasks);
